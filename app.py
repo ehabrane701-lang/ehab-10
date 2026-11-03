@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 """
 ZIAD HOST - نظام استضافة متطور مع لوحة تحكم وإدارة وبوت تيليجرام مدمج
@@ -39,7 +38,7 @@ from telegram.ext import (
 
 # إعدادات التسجيل (Logging)
 logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO
 )
 logger = logging.getLogger(__name__)
@@ -48,7 +47,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 USERS_DIR = os.path.join(BASE_DIR, "USERS")
 os.makedirs(USERS_DIR, exist_ok=True)
 
-# مسارات التخزين والتنظيم الشاملة
+# مسارات التخزين الإضافية المطلوبة بنظام الحماية والهيكلة
 RUNNING_DIR = os.path.join(BASE_DIR, "active_bots")
 LOGS_DIR = os.path.join(BASE_DIR, "bot_logs")
 DB_DIR = os.path.join(BASE_DIR, "database")
@@ -83,7 +82,7 @@ def read_json(path):
     with db_lock:
         try:
             if os.path.exists(path):
-                with open(path, 'r', encoding='utf-8') as f:
+                with open(path, "r", encoding="utf-8") as f:
                     return json.load(f)
             return {}
         except:
@@ -93,7 +92,7 @@ def write_json(path, data):
     with db_lock:
         try:
             temp_path = path + ".tmp"
-            with open(temp_path, 'w', encoding='utf-8') as f:
+            with open(temp_path, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=4)
             os.replace(temp_path, path)
         except Exception as e:
@@ -102,16 +101,16 @@ def write_json(path, data):
 # نظام الحماية المتقدم للأكواد ضد الاختراق والتخريب
 def scan_code_security(content):
     dangerous_patterns = [
-        r'\bos\.system\s*\(',
-        r'\bos\.popen\s*\(',
-        r'\bshutil\.rmtree\s*\(\s*[\"\']\/',
-        r'\bctypes\b',
-        r'open\s*\(\s*[\"\'].*\/etc\/passwd',
-        r'open\s*\(\s*[\"\'].*\/root\/',
-        r'rm\s+-rf\s+/',
-        r'\bsubprocess\.Popen\s*\(\s*\[\s*[\"\']rm',
-        r'\beval\s*\(',
-        r'\bexec\s*\('
+        r"\bos\.system\s*\(",
+        r"\bos\.popen\s*\(",
+        r"\bshutil\.rmtree\s*\(\s*[\"\"]\/",
+        r"\bctypes\b",
+        r"open\s*\(\s*[\"\"].*\/etc\/passwd",
+        r"open\s*\(\s*[\"\"].*\/root\/",
+        r"rm\s+-rf\s+/",
+        r"\bsubprocess\.Popen\s*\(\s*\[\s*[\"\"]rm",
+        r"\beval\s*\(",
+        r"\bexec\s*\("
     ]
     for pattern in dangerous_patterns:
         if re.search(pattern, content, re.IGNORECASE):
@@ -120,57 +119,57 @@ def scan_code_security(content):
 
 def init_security():
     security = read_json(SECURITY_DB)
-    if 'master_key' not in security:
-        m_key = base64.b64encode(get_random_bytes(32)).decode('utf-8')
-        security['master_key'] = m_key
-        security['file_keys'] = {}
+    if "master_key" not in security:
+        m_key = base64.b64encode(get_random_bytes(32)).decode("utf-8")
+        security["master_key"] = m_key
+        security["file_keys"] = {}
         write_json(SECURITY_DB, security)
 
 def get_master_key():
     security = read_json(SECURITY_DB)
-    master_key = security.get('master_key')
+    master_key = security.get("master_key")
     if not master_key:
-        master_key = base64.b64encode(get_random_bytes(32)).decode('utf-8')
-        security['master_key'] = master_key
+        master_key = base64.b64encode(get_random_bytes(32)).decode("utf-8")
+        security["master_key"] = master_key
         write_json(SECURITY_DB, security)
     return base64.b64decode(master_key)
 
 def generate_file_key(fid, user_id, admin_id, token):
     security = read_json(SECURITY_DB)
-    file_keys = security.get('file_keys', {})
+    file_keys = security.get("file_keys", {})
     if fid not in file_keys:
         combined = f"{fid}:{user_id}:{admin_id}:{token}"
         salt = hashlib.sha256(combined.encode()).digest()[:16]
         master_key = get_master_key()
-        kdf = hashlib.pbkdf2_hmac('sha256', master_key, salt, 100000, dklen=32)
+        kdf = hashlib.pbkdf2_hmac("sha256", master_key, salt, 100000, dklen=32)
         file_keys[fid] = {
-            'key': base64.b64encode(kdf).decode('utf-8'),
-            'salt': base64.b64encode(salt).decode('utf-8'),
-            'user_id': user_id
+            "key": base64.b64encode(kdf).decode("utf-8"),
+            "salt": base64.b64encode(salt).decode("utf-8"),
+            "user_id": user_id
         }
-        security['file_keys'] = file_keys
+        security["file_keys"] = file_keys
         write_json(SECURITY_DB, security)
     return file_keys[fid]
 
 def get_file_key(fid):
     security = read_json(SECURITY_DB)
-    file_keys = security.get('file_keys', {})
+    file_keys = security.get("file_keys", {})
     return file_keys.get(fid)
 
 def encrypt_file_content(content, fid, user_id, admin_id, token):
     try:
         file_key_info = generate_file_key(fid, user_id, admin_id, token)
-        key = base64.b64decode(file_key_info['key'])
-        salt = base64.b64decode(file_key_info['salt'])
+        key = base64.b64decode(file_key_info["key"])
+        salt = base64.b64decode(file_key_info["salt"])
         cipher = AES.new(key, AES.MODE_CBC)
-        ct_bytes = cipher.encrypt(pad(content.encode('utf-8'), AES.block_size))
+        ct_bytes = cipher.encrypt(pad(content.encode("utf-8"), AES.block_size))
         encrypted_data = {
-            'iv': base64.b64encode(cipher.iv).decode('utf-8'),
-            'ciphertext': base64.b64encode(ct_bytes).decode('utf-8'),
-            'salt': base64.b64encode(salt).decode('utf-8'),
-            'fid': fid,
-            'user_id': user_id,
-            'timestamp': datetime.now().isoformat()
+            "iv": base64.b64encode(cipher.iv).decode("utf-8"),
+            "ciphertext": base64.b64encode(ct_bytes).decode("utf-8"),
+            "salt": base64.b64encode(salt).decode("utf-8"),
+            "fid": fid,
+            "user_id": user_id,
+            "timestamp": datetime.now().isoformat()
         }
         return json.dumps(encrypted_data)
     except Exception as e:
@@ -183,12 +182,12 @@ def decrypt_file_content(encrypted_json, fid):
         file_key_info = get_file_key(fid)
         if not file_key_info:
             return None
-        key = base64.b64decode(file_key_info['key'])
-        iv = base64.b64decode(data['iv'])
-        ct = base64.b64decode(data['ciphertext'])
+        key = base64.b64decode(file_key_info["key"])
+        iv = base64.b64decode(data["iv"])
+        ct = base64.b64decode(data["ciphertext"])
         cipher = AES.new(key, AES.MODE_CBC, iv)
         pt = unpad(cipher.decrypt(ct), AES.block_size)
-        return pt.decode('utf-8')
+        return pt.decode("utf-8")
     except Exception as e:
         print(f"Decryption error: {e}")
         return None
@@ -197,7 +196,7 @@ def save_encrypted_file(fid, content, user_id, admin_id, token):
     encrypted_content = encrypt_file_content(content, fid, user_id, admin_id, token)
     if encrypted_content:
         encrypted_path = os.path.join(ENCRYPTED_DIR, f"{fid}.enc")
-        with open(encrypted_path, 'w', encoding='utf-8') as f:
+        with open(encrypted_path, "w", encoding="utf-8") as f:
             f.write(encrypted_content)
         return True
     return False
@@ -205,34 +204,19 @@ def save_encrypted_file(fid, content, user_id, admin_id, token):
 def load_encrypted_file(fid):
     encrypted_path = os.path.join(ENCRYPTED_DIR, f"{fid}.enc")
     if os.path.exists(encrypted_path):
-        with open(encrypted_path, 'r', encoding='utf-8') as f:
+        with open(encrypted_path, "r", encoding="utf-8") as f:
             encrypted_content = f.read()
         return decrypt_file_content(encrypted_content, fid)
     return None
 
-def get_settings():
-    default_settings = {"bot_locked": False, "auto_approve": True}
-    current_settings = read_json(SETTINGS_DB)
-    changed = False
-    for key, value in default_settings.items():
-        if key not in current_settings:
-            current_settings[key] = value
-            changed = True
-    if changed:
-        write_json(SETTINGS_DB, current_settings)
-    return current_settings
-
-def save_settings(settings):
-    write_json(SETTINGS_DB, settings)
-
 def auto_fix_errors(code):
     fixes = [
-        (r'\bprint\s+(\S+)', r'print(\1)'),
-        (r'\braw_input\b', 'input'),
-        (r'\bxrange\b', 'range'),
-        (r'\.iteritems\(\)', '.items()'),
-        (r'\.itervalues\(\)', '.values()'),
-        (r'\.iterkeys\(\)', '.keys()'),
+        (r"\bprint\s+(\S+)", r"print(\1)"),
+        (r"\praw_input\b", "input"),
+        (r"\bxrange\b", "range"),
+        (r"\.iteritems\(\)", ".items()"),
+        (r"\.itervalues\(\)", ".values()"),
+        (r"\.iterkeys\(\)", ".keys()"),
     ]
     for pattern, replacement in fixes:
         code = re.sub(pattern, replacement, code)
@@ -240,14 +224,15 @@ def auto_fix_errors(code):
 
 app = Flask(__name__, static_folder=BASE_DIR)
 app.secret_key = "ZIAD_HOST_GOLD_2026_SUPER_SECRET_KEY"
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
-app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024
-app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=30)
+app.config["MAX_CONTENT_LENGTH"] = 500 * 1024 * 1024
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
 BOT_TOKEN = "9198716816:AAHYWvbY4SwwBQ5hKnoA17SOuxlA851oNCY"
 ADMIN_TELEGRAM_IDS = [1002670694]
 ADMIN_ID = 1002670694
+API_BASE_URL = os.environ.get("API_BASE_URL", "https://ehab-10.onrender.com")
 
 DEVELOPER_INFO = "🛠 طُوِّر بواسطة: *𝗘𝗛𝗔𝗕𝗔𝗜𝗛𝗔𝗪𝗕𝗔𝗡𝗜*\n📬 تواصل: @Y_20_20"
 
@@ -1767,7 +1752,7 @@ DB_FILE = os.path.join(BASE_DIR, "db.json")
 def load_db():
     if os.path.exists(DB_FILE):
         try:
-            with open(DB_FILE, 'r', encoding='utf-8') as f:
+            with open(DB_FILE, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 if "plans" not in data:
                     data["plans"] = {}
@@ -1795,8 +1780,7 @@ def load_db():
                 "telegram_id": ADMIN_TELEGRAM_IDS[0],
                 "api_key": None,
                 "storage_limit": 10240,
-                "plan": "admin",
-                "balance": 1000.0
+                "plan": "admin"
             }
         },
         "servers": {},
@@ -1814,7 +1798,7 @@ def load_db():
 
 def save_db(db_data):
     try:
-        with open(DB_FILE, 'w', encoding='utf-8') as f:
+        with open(DB_FILE, "w", encoding="utf-8") as f:
             json.dump(db_data, f, indent=4, ensure_ascii=False)
         return True
     except Exception as e:
@@ -1836,7 +1820,7 @@ def get_assigned_port():
             try:
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.settimeout(0.1)
-                result = s.connect_ex(('127.0.0.1', port))
+                result = s.connect_ex(("127.0.0.1", port))
                 s.close()
                 if result != 0:
                     return port
@@ -1845,12 +1829,12 @@ def get_assigned_port():
     return PORT_RANGE_START
 
 def get_current_user():
-    if 'email' in session:
-        return db["users"].get(session['email'])
+    if "email" in session:
+        return db["users"].get(session["email"])
     return None
 
 def get_user_servers_dir(email):
-    safe_email = email.replace('@', '_at_').replace('.', '_dot_')
+    safe_email = email.replace("@", "_at_").replace(".", "_dot_")
     path = os.path.join(USERS_DIR, safe_email, "SERVERS")
     os.makedirs(path, exist_ok=True)
     return path
@@ -1858,20 +1842,6 @@ def get_user_servers_dir(email):
 def is_admin(email):
     u = db["users"].get(email)
     return u.get("is_admin", False) if u else False
-
-def is_admin_tg_id(uid):
-    if uid in ADMIN_TELEGRAM_IDS or uid == ADMIN_ID:
-        return True
-    for udata in db["users"].values():
-        if udata.get("telegram_id") == uid and udata.get("is_admin", False):
-            return True
-    return False
-
-def is_user_pro(uid):
-    for udata in db["users"].values():
-        if udata.get("telegram_id") == uid and udata.get("plan") in ["4gb", "10gb", "admin"]:
-            return True
-    return False
 
 def generate_api_key():
     return secrets.token_urlsafe(32)
@@ -1896,7 +1866,7 @@ def uptime_str(start_time):
     return " و ".join(parts) if parts else "أقل من دقيقة"
 
 def _check_admin_access():
-    if 'email' in session and is_admin(session['email']):
+    if "email" in session and is_admin(session["email"]):
         return True
     api_key = None
     if request.is_json:
@@ -1916,7 +1886,7 @@ def detect_main_file(srv_path: str) -> str:
     for candidate in ["main.py", "bot.py", "app.py", "index.py", "run.py", "start.py"]:
         if os.path.exists(os.path.join(srv_path, candidate)):
             return candidate
-    py_files = [f for f in os.listdir(srv_path) if f.endswith('.py')]
+    py_files = [f for f in os.listdir(srv_path) if f.endswith(".py")]
     return py_files[0] if py_files else ""
 
 def auto_install_deps(srv_path: str, log_file):
@@ -1940,7 +1910,7 @@ def detect_node_main_file(srv_path: str) -> str:
     for candidate in candidates:
         if os.path.exists(os.path.join(srv_path, candidate)):
             return candidate
-    js_files = [f for f in os.listdir(srv_path) if f.endswith('.js')]
+    js_files = [f for f in os.listdir(srv_path) if f.endswith(".js")]
     return js_files[0] if js_files else ""
 
 def auto_install_node_deps(srv_path: str, log_file):
@@ -1990,7 +1960,7 @@ def start_python_server_process(folder):
 
     log_path = os.path.join(srv["path"], "out.log")
     error_path = os.path.join(srv["path"], "errors.log")
-    log_file = open(log_path, "a", encoding='utf-8')
+    log_file = open(log_path, "a", encoding="utf-8")
     log_file.write(f"\n{'='*50}\n🚀 بدء التشغيل (Python) - {datetime.now()}\n📁 {main_file}\n🔌 المنفذ: {port}\n{'='*50}\n\n")
     log_file.flush()
 
@@ -2000,13 +1970,12 @@ def start_python_server_process(folder):
         env["SERVER_PORT"] = str(port)
         cmd = [sys.executable, "-u", main_file]
         proc = subprocess.Popen(
-            cmd, cwd=srv["path"], stdout=log_file, stderr=open(error_path, "a", encoding='utf-8'),
+            cmd, cwd=srv["path"], stdout=log_file, stderr=open(error_path, "a", encoding="utf-8"),
             env=env, preexec_fn=os.setsid if hasattr(os, 'setsid') else None
         )
         srv["status"] = "Running"
         srv["pid"] = proc.pid
         srv["start_time"] = time.time()
-        active_processes[folder] = proc
         save_db(db)
         return True, "✅ تم التشغيل"
     except Exception as e:
@@ -2037,7 +2006,7 @@ def start_node_server_process(folder):
 
     log_path = os.path.join(srv["path"], "out.log")
     error_path = os.path.join(srv["path"], "errors.log")
-    log_file = open(log_path, "a", encoding='utf-8')
+    log_file = open(log_path, "a", encoding="utf-8")
     log_file.write(f"\n{'='*50}\n🚀 بدء التشغيل (Node.js) - {datetime.now()}\n📁 {main_file}\n🔌 المنفذ: {port}\n{'='*50}\n\n")
     log_file.flush()
 
@@ -2047,13 +2016,12 @@ def start_node_server_process(folder):
         env["SERVER_PORT"] = str(port)
         cmd = ["node", main_file]
         proc = subprocess.Popen(
-            cmd, cwd=srv["path"], stdout=log_file, stderr=open(error_path, "a", encoding='utf-8'),
+            cmd, cwd=srv["path"], stdout=log_file, stderr=open(error_path, "a", encoding="utf-8"),
             env=env, preexec_fn=os.setsid if hasattr(os, 'setsid') else None
         )
         srv["status"] = "Running"
         srv["pid"] = proc.pid
         srv["start_time"] = time.time()
-        active_processes[folder] = proc
         save_db(db)
         return True, "✅ تم التشغيل"
     except Exception as e:
@@ -2078,8 +2046,6 @@ def stop_server_process(folder):
             p.kill()
         except Exception:
             pass
-    if folder in active_processes:
-        del active_processes[folder]
     srv["status"] = "Stopped"
     srv["pid"] = None
     save_db(db)
@@ -2129,7 +2095,7 @@ def dashboard():
     return send_from_directory(BASE_DIR, "index.html")
 
 @app.route('/admin')
-def admin_panel_route():
+def admin_panel():
     if 'email' not in session or not is_admin(session['email']):
         return redirect('/login')
     return send_from_directory(BASE_DIR, "admin_panel.html")
@@ -2159,12 +2125,11 @@ def api_register():
         "telegram_id": None,
         "api_key": None,
         "storage_limit": db["plans"]["free"]["storage"],
-        "plan": "free",
-        "balance": 0.0
+        "plan": "free"
     }
     save_db(db)
     
-    safe_email = email.replace('@', '_at_').replace('.', '_dot_')
+    safe_email = email.replace("@", "_at_").replace(".", "_dot_")
     user_dir = os.path.join(USERS_DIR, safe_email)
     os.makedirs(user_dir, exist_ok=True)
     os.makedirs(os.path.join(user_dir, "SERVERS"), exist_ok=True)
@@ -2211,7 +2176,7 @@ def api_current_user():
     return jsonify({"success": False})
 
 @app.route('/api/create_api_key', methods=['POST'])
-def create_api_key():
+def create_api_key_route():
     if 'email' not in session:
         return jsonify({"success": False, "message": "غير مصرح"}), 401
     email = session['email']
@@ -2266,12 +2231,11 @@ def admin_create_user():
         "telegram_id": None,
         "api_key": None,
         "storage_limit": db["plans"]["free"]["storage"],
-        "plan": "free",
-        "balance": 0.0
+        "plan": "free"
     }
     save_db(db)
     
-    safe_email = email.replace('@', '_at_').replace('.', '_dot_')
+    safe_email = email.replace("@", "_at_").replace(".", "_dot_")
     user_dir = os.path.join(USERS_DIR, safe_email)
     os.makedirs(user_dir, exist_ok=True)
     os.makedirs(os.path.join(user_dir, "SERVERS"), exist_ok=True)
@@ -2411,7 +2375,7 @@ def add_server():
     plan_id = user.get("plan", "free")
     plan = db["plans"].get(plan_id, db["plans"]["free"])
     
-    safe_email = session['email'].replace('@', '_at_').replace('.', '_dot_')
+    safe_email = session['email'].replace("@", "_at_").replace(".", "_dot_")
     folder = f"{safe_email}_{re.sub(r'[^a-zA-Z0-9]', '_', name)}_{int(time.time())}"
     path = os.path.join(get_user_servers_dir(session['email']), folder)
     os.makedirs(path, exist_ok=True)
@@ -2477,7 +2441,7 @@ def get_server_stats(folder):
     log_path = os.path.join(srv["path"], "out.log")
     if os.path.exists(log_path):
         try:
-            with open(log_path, 'r', encoding='utf-8', errors='ignore') as f:
+            with open(log_path, "r", encoding="utf-8", errors="ignore") as f:
                 lines = f.read().split('\n')
                 logs = '\n'.join(lines[-500:])
         except Exception:
@@ -2512,7 +2476,7 @@ def list_server_files(folder):
     files = []
     try:
         for f in os.listdir(path):
-            if f in ['out.log', 'server.log', 'meta.json', 'errors.log']:
+            if f in ["out.log", "server.log", "meta.json", "errors.log"]:
                 continue
             fpath = os.path.join(path, f)
             stat = os.stat(fpath)
@@ -2545,7 +2509,7 @@ def get_file_content(folder, filename):
     if not os.path.exists(fpath) or os.path.isdir(fpath):
         return jsonify({"content": ""})
     try:
-        with open(fpath, 'r', encoding='utf-8', errors='replace') as f:
+        with open(fpath, "r", encoding="utf-8", errors="replace") as f:
             return jsonify({"content": f.read()})
     except Exception:
         return jsonify({"content": "[ملف ثنائي]"})
@@ -2569,7 +2533,7 @@ def save_file_content(folder, filename):
 
     fpath = os.path.join(srv["path"], filename)
     try:
-        with open(fpath, 'w', encoding='utf-8') as f:
+        with open(fpath, "w", encoding="utf-8") as f:
             f.write(content)
         return jsonify({"success": True, "message": "✅ تم الحفظ بنجاح"})
     except Exception as e:
@@ -2590,7 +2554,7 @@ def upload_files(folder):
             if f and f.filename and '..' not in f.filename:
                 content_bytes = f.read()
                 try:
-                    content_str = content_bytes.decode('utf-8', errors='ignore')
+                    content_str = content_bytes.decode("utf-8", errors="ignore")
                     is_safe, msg = scan_code_security(content_str)
                     if not is_safe:
                         continue
@@ -2598,7 +2562,7 @@ def upload_files(folder):
                     pass
                 
                 save_path = os.path.join(srv["path"], f.filename)
-                with open(save_path, 'wb') as sf:
+                with open(save_path, "wb") as sf:
                     sf.write(content_bytes)
                 uploaded += 1
         except Exception:
@@ -2606,9 +2570,9 @@ def upload_files(folder):
     
     if uploaded > 0:
         if srv.get("server_type") == "Node.js":
-            threading.Thread(target=auto_install_node_deps, args=(srv["path"], open(os.path.join(srv["path"], "out.log"), "a", encoding='utf-8')), daemon=True).start()
+            threading.Thread(target=auto_install_node_deps, args=(srv["path"], open(os.path.join(srv["path"], "out.log"), "a", encoding="utf-8")), daemon=True).start()
         else:
-            threading.Thread(target=auto_install_deps, args=(srv["path"], open(os.path.join(srv["path"], "out.log"), "a", encoding='utf-8')), daemon=True).start()
+            threading.Thread(target=auto_install_deps, args=(srv["path"], open(os.path.join(srv["path"], "out.log"), "a", encoding="utf-8")), daemon=True).start()
         return jsonify({"success": True, "message": f"✅ تم رفع {uploaded} ملف بأمان"})
     return jsonify({"success": False, "message": "فشل الرفع أو تم حظر الملفات"})
 
@@ -2662,7 +2626,7 @@ def create_file_api(folder):
         if filename.endswith('/'):
             os.makedirs(fpath, exist_ok=True)
         else:
-            with open(fpath, 'w', encoding='utf-8') as f:
+            with open(fpath, "w", encoding="utf-8") as f:
                 f.write(content)
         return jsonify({"success": True, "message": f"✅ تم إنشاء {filename}"})
     except Exception as e:
@@ -2736,9 +2700,9 @@ def install_requirements(folder):
         return jsonify({"success": False})
     
     if srv.get("server_type") == "Node.js":
-        threading.Thread(target=auto_install_node_deps, args=(srv["path"], open(os.path.join(srv["path"], "out.log"), "a", encoding='utf-8')), daemon=True).start()
+        threading.Thread(target=auto_install_node_deps, args=(srv["path"], open(os.path.join(srv["path"], "out.log"), "a", encoding="utf-8")), daemon=True).start()
     else:
-        threading.Thread(target=auto_install_deps, args=(srv["path"], open(os.path.join(srv["path"], "out.log"), "a", encoding='utf-8')), daemon=True).start()
+        threading.Thread(target=auto_install_deps, args=(srv["path"], open(os.path.join(srv["path"], "out.log"), "a", encoding="utf-8")), daemon=True).start()
     return jsonify({"success": True, "message": "📦 بدأ تثبيت المكتبات"})
 
 @app.route('/api/bot/verify', methods=['POST'])
@@ -2825,7 +2789,7 @@ def bot_console():
     logs = "لا توجد مخرجات بعد"
     if os.path.exists(log_path):
         try:
-            with open(log_path, 'r', encoding='utf-8', errors='ignore') as f:
+            with open(log_path, "r", encoding="utf-8", errors="ignore") as f:
                 logs = f.read()[-3500:]
         except Exception:
             pass
@@ -2848,7 +2812,7 @@ def bot_errors():
     errors = "✅ لا توجد أخطاء"
     if os.path.exists(err_path):
         try:
-            with open(err_path, 'r', encoding='utf-8', errors='ignore') as f:
+            with open(err_path, "r", encoding="utf-8", errors="ignore") as f:
                 errors = f.read()[-3500:]
         except Exception:
             pass
@@ -2869,9 +2833,9 @@ def bot_install():
         return jsonify({"success": False}), 403
     
     if srv.get("server_type") == "Node.js":
-        threading.Thread(target=auto_install_node_deps, args=(srv["path"], open(os.path.join(srv["path"], "out.log"), "a", encoding='utf-8')), daemon=True).start()
+        threading.Thread(target=auto_install_node_deps, args=(srv["path"], open(os.path.join(srv["path"], "out.log"), "a", encoding="utf-8")), daemon=True).start()
     else:
-        threading.Thread(target=auto_install_deps, args=(srv["path"], open(os.path.join(srv["path"], "out.log"), "a", encoding='utf-8')), daemon=True).start()
+        threading.Thread(target=auto_install_deps, args=(srv["path"], open(os.path.join(srv["path"], "out.log"), "a", encoding="utf-8")), daemon=True).start()
     return jsonify({"success": True, "message": "📦 بدأ تثبيت المكتبات"})
 
 @app.route('/api/bot/create_server', methods=['POST'])
@@ -2896,7 +2860,7 @@ def bot_create_server():
     plan_id = user.get("plan", "free")
     plan = db["plans"].get(plan_id, db["plans"]["free"])
     
-    safe_email = email.replace('@', '_at_').replace('.', '_dot_')
+    safe_email = email.replace("@", "_at_").replace(".", "_dot_")
     folder = f"{safe_email}_{re.sub(r'[^a-zA-Z0-9]', '_', name)}_{int(time.time())}"
     path = os.path.join(get_user_servers_dir(email), folder)
     os.makedirs(path, exist_ok=True)
@@ -2911,52 +2875,25 @@ def bot_create_server():
     save_db(db)
     return jsonify({"success": True, "message": f"✅ تم إنشاء {server_type} سيرفر: {name}"})
 
-WAITING_FOR_API_KEY, WAITING_FOR_NEW_SERVER_NAME, WAITING_FOR_SERVER_TYPE, WAITING_FOR_DELETE_USERNAME, WAITING_FOR_UPLOAD_PYTHON, WAITING_FOR_UPLOAD_JS, WAITING_FOR_BROADCAST, WAITING_FOR_PRO_USER = range(8)
-
-def local_api_request(endpoint, method="GET", data=None, params=None, api_key=None):
-    with app.test_client() as client:
-        headers = {}
-        if api_key:
-            if method == "GET":
-                if params is None: params = {}
-                params["api_key"] = api_key
-            else:
-                if data is None: data = {}
-                if "api_key" not in data: data["api_key"] = api_key
-        
-        if method == "GET":
-            resp = client.get(endpoint, query_string=params, headers=headers)
-        else:
-            resp = client.post(endpoint, json=data, headers=headers)
-        
-        try:
-            return resp.get_json()
-        except:
-            return {"success": False, "message": resp.data.decode('utf-8', errors='ignore')}
+WAITING_FOR_API_KEY, WAITING_FOR_NEW_SERVER_NAME, WAITING_FOR_SERVER_TYPE, WAITING_FOR_DELETE_USERNAME = range(4)
 
 def api_request(endpoint, method="GET", data=None, params=None, api_key=None):
-    return local_api_request(endpoint, method, data, params, api_key)
+    url = f"{API_BASE_URL}{endpoint}"
+    try:
+        if method == "GET":
+            p = dict(params or {})
+            if api_key: p["api_key"] = api_key
+            resp = requests.get(url, params=p, timeout=30)
+        else:
+            d = dict(data or {})
+            if api_key and "api_key" not in d: d["api_key"] = api_key
+            resp = requests.post(url, json=d, timeout=30)
+        return resp.json() if resp.ok else {"success": False, "message": f"HTTP {resp.status_code}"}
+    except Exception as e:
+        return {"success": False, "message": str(e)}
 
 def is_admin_tg(update: Update) -> bool:
-    uid = update.effective_chat.id
-    return is_admin_tg_id(uid)
-
-def btn(text, callback_data=None, url=None, style=None):
-    return InlineKeyboardButton(text, callback_data=callback_data, url=url)
-
-def deco(title, body):
-    return f"<b>{title}</b>\n\n{body}"
-
-async def edit_msg(call, text, kb=None):
-    try:
-        if isinstance(call, Update) and call.callback_query:
-            await call.callback_query.message.edit_text(text, parse_mode="HTML", reply_markup=kb)
-        elif hasattr(call, "edit_text"):
-            await call.edit_text(text, parse_mode="HTML", reply_markup=kb)
-        elif hasattr(call, "message") and hasattr(call.message, "edit_text"):
-            await call.message.edit_text(text, parse_mode="HTML", reply_markup=kb)
-    except Exception:
-        pass
+    return update.effective_chat.id in ADMIN_TELEGRAM_IDS
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text("📚 المساعدة:\n\nهذا البوت يعمل بشكل مستمر على خادم ZIAD HOST\nللاشتراك أو الاستفسار: @Y_20_20")
@@ -2971,105 +2908,114 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
     logger.error(msg="Exception while handling an update:", exc_info=context.error)
 
-# --- لوحة التحكم الشاملة للآدمن بالأزرار الملونة بدقة عالية ---
-async def admin_panel(update: Update, context: ContextTypes.DEFAULT_TYPE, edit=False):
-    users = read_json(USERS_DB)
-    files = read_json(FILES_DB)
-    pending = [f for f in files.values() if f.get('status') == 'pending']
-    active = sum(1 for fid in active_processes if active_processes[fid].poll() is None)
-    settings = get_settings()
-    locked = settings.get('bot_locked', False)
-    
-    text = f"⚙️ <b>لوحة تحكم الإدارة العليا</b>\n\n👥 المستخدمين: {len(users)}\n📁 إجمالي الملفات: {len(files)}\n⏳ طلبات معلقة: {len(pending)}\n🟢 الملفات النشطة: {active}\n\n🔐 حالة البوت: {'مغلق للصيانة 🔒' if locked else 'مفتوح للعمل 🔓'}"
-    
-    kb = InlineKeyboardMarkup(row_width=2)
-    kb.row(
-        btn("💰 وضع المدفوع", callback_data="adm_paid_mode"),
-        btn("🎁 وضع مجاني", callback_data="adm_free_mode")
-    )
-    kb.row(
-        btn("👥 معرفة كم مشترك", callback_data="adm_sub_count"),
-        btn("📢 بث عام للكل", callback_data="adm_broadcast")
-    )
-    kb.row(
-        btn("📢 إذاعة للقنوات تلقائياً", callback_data="adm_auto_broadcast"),
-        btn("🔄 تحديث قنوات الإذاعة", callback_data="adm_update_channels")
-    )
-    kb.row(
-        btn("👁️ كشف القنوات", callback_data="adm_detect_channels"),
-        btn("👑 رفع مشرف", callback_data="adm_promote")
-    )
-    kb.row(
-        btn("🗑️ حذف مشرف", callback_data="adm_remove_admin"),
-        btn("🔧 الصيانة", callback_data="adm_maintenance")
-    )
-    kb.row(
-        btn("⚡ إلغاء الصيانة", callback_data="adm_cancel_maintenance"),
-        btn("🚫 حظر مستخدم", callback_data="adm_ban_user")
-    )
-    kb.row(
-        btn("✅ فك حظر مستخدم", callback_data="adm_unban_user"),
-        btn("🧹 تنظيف المخلفات", callback_data="adm_clean")
-    )
-    kb.row(
-        btn("🚀 تسريع البوت", callback_data="adm_speedup"),
-        btn("📊 الإحصائيات", callback_data="adm_stats")
-    )
-    kb.row(
-        btn("➕ إضافة رصيد", callback_data="adm_add_balance"),
-        btn("➖ خصم رصيد", callback_data="adm_deduct_balance")
-    )
-    kb.add(btn("🔙 رجوع للرئيسية", callback_data="nav_main"))
-    
-    if edit:
-        await edit_msg(update, deco("⚙️ لوحة الإدارة", text), kb)
+async def show_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, edit=False):
+    api_key = context.user_data.get("api_key")
+    username = context.user_data.get("username", "")
+    is_adm = is_admin_tg(update)
+
+    keyboard = []
+    if api_key:
+        keyboard.append([
+            InlineKeyboardButton("📁 سيرفراتي", callback_data="my_servers"),
+            InlineKeyboardButton("➕ إنشاء سيرفر", callback_data="create_server"),
+        ])
+        keyboard.append([
+            InlineKeyboardButton("🔑 تغيير API Key", callback_data="change_api"),
+            InlineKeyboardButton("🚪 تسجيل خروج", callback_data="logout"),
+        ])
     else:
-        await update.message.reply_text(deco("⚙️ لوحة الإدارة", text), parse_mode="HTML", reply_markup=kb)
+        keyboard.append([InlineKeyboardButton("🔑 ربط API Key", callback_data="enter_api")])
 
-# دالة القائمة الرئيسية مع تنسيق الأزرار وزر رفع بايثون وزر رفع جافاسكريبت والملفات المضغوطة
-def main_kb(uid):
-    kb = InlineKeyboardMarkup(row_width=2)
-    kb.add(
-        btn("🐍 رفع ملف بايثون", callback_data="nav_upload_py"),
-        btn("🟨 رفع ملف جافاسكريبت", callback_data="nav_upload_js")
-    )
-    kb.add(btn("📦 رفع ملف مضغوط (ZIP)", callback_data="nav_upload_zip"))
-    kb.row(
-        btn("📁 ملفاتي", callback_data="nav_files"),
-        btn("🛒 المتجر", callback_data="nav_store")
-    )
-    kb.row(
-        btn("💼 محفظتي", callback_data="nav_wallet"),
-        btn("📊 حسابي", callback_data="nav_stats")
-    )
-    kb.row(
-        btn("🛠 تثبيت مكتبة", callback_data="nav_lib"),
-        btn("📖 التعليمات", callback_data="nav_help")
-    )
-    if is_user_pro(uid):
-        kb.row(btn("🔧 لوحة Pro", callback_data="nav_pro"))
-    kb.add(btn("👨‍💻 تواصل مع المطور", url=f"tg://user?id={ADMIN_ID}"))
-    if is_admin_tg_id(uid):
-        kb.add(btn("⚙️ لوحة الإدارة", callback_data="nav_admin"))
-    return kb
+    if is_adm:
+        keyboard.append([InlineKeyboardButton("👑 لوحة الإدارة", callback_data="admin_panel")])
 
-def pro_panel_kb(uid):
-    kb = InlineKeyboardMarkup(row_width=2)
-    kb.add(btn("📥 تحميل جميع الملفات", callback_data="pro_download_all"))
-    kb.add(btn("🔍 فحص تلقائي", callback_data="pro_auto_fix"))
-    kb.add(btn("▶️ تشغيل تجريبي", callback_data="pro_test_run"))
-    kb.add(btn("🛒 بيع في المتجر", callback_data="pro_sell"))
-    kb.add(btn("🔙 رجوع", callback_data="nav_main"))
-    return kb
+    keyboard.append([InlineKeyboardButton("💬 تواصل مع المطور @Y_20_20", url="https://t.me/Y_20_20")])
+
+    text = "━━━━━━━━━━━━━━━━━━━━\n      ZIAD HOST 🚀\n━━━━━━━━━━━━━━━━━━━━\n"
+    if username: text += f"👤 أهلاً، *{username}*!\n"
+    text += "✅ متصل بالنظام\n" if api_key else "⚠️ يجب ربط API Key أولاً\n"
+    text += f"\n{DEVELOPER_INFO}"
+
+    markup = InlineKeyboardMarkup(keyboard)
+    try:
+        if edit and update.callback_query:
+            await update.callback_query.edit_message_text(text, parse_mode="Markdown", reply_markup=markup)
+        elif update.message:
+            await update.message.reply_text(text, parse_mode="Markdown", reply_markup=markup)
+        else:
+            await update.callback_query.edit_message_text(text, parse_mode="Markdown", reply_markup=markup)
+    except Exception:
+        pass
+
+async def show_servers_list(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+
+    api_key = context.user_data.get("api_key")
+    if not api_key:
+        await query.edit_message_text("❌ يجب ربط API Key أولاً.")
+        return
+
+    result = api_request("/api/bot/servers", api_key=api_key)
+    if not result or not result.get("success"):
+        await query.edit_message_text("❌ فشل جلب السيرفرات. تحقق من صحة API Key.", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 رجوع", callback_data="main_menu")]]))
+        return
+
+    servers = result.get("servers", [])
+    if not servers:
+        await query.edit_message_text("📭 لا توجد سيرفرات. أنشئ سيرفرك الأول الآن!", reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("➕ إنشاء سيرفر", callback_data="create_server")],
+            [InlineKeyboardButton("🔙 رجوع", callback_data="main_menu")]
+        ]))
+        return
+
+    await query.edit_message_text(f"📋 لديك *{len(servers)}* سيرفر:", parse_mode="Markdown")
+
+    for srv in servers:
+        status_emoji = "🟢" if srv["status"] == "Running" else "⚫"
+        srv_type = srv.get("type", "Python")
+        type_icon = "🐍" if srv_type == "Python" else "🟨"
+
+        text = f"━━━━━━━━━━━━━━━━━━━━\n{status_emoji} *{srv['title']}*\n━━━━━━━━━━━━━━━━━━━━\n{type_icon} النوع: `{srv_type}`\n📊 الحالة: `{srv['status']}`\n🔌 المنفذ: `{srv['port']}`\n⏱ وقت التشغيل: {srv['uptime']}"
+        folder = srv["folder"]
+        keyboard = [
+            [InlineKeyboardButton("▶️ تشغيل", callback_data=f"srv_start|{folder}"), InlineKeyboardButton("⏹ إيقاف", callback_data=f"srv_stop|{folder}"), InlineKeyboardButton("🔄 إعادة", callback_data=f"srv_restart|{folder}")],
+            [InlineKeyboardButton("🖥 كونسول", callback_data=f"console|{folder}"), InlineKeyboardButton("⚠️ أخطاء", callback_data=f"errors|{folder}"), InlineKeyboardButton("🗑 حذف", callback_data=f"srv_delete|{folder}")],
+            [InlineKeyboardButton("📦 تثبيت مكتبات تلقائياً", callback_data=f"install|{folder}")]
+        ]
+        await query.message.reply_text(text, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(keyboard))
+
+    await query.message.reply_text("━━━━━━━━━━━━━━━━━━━━", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 القائمة الرئيسية", callback_data="main_menu")]]))
+
+async def show_admin_panel(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+
+    if not is_admin_tg(update):
+        await query.edit_message_text("❌ غير مصرح لك بالدخول.")
+        return
+
+    api_key = context.user_data.get("api_key")
+    result = api_request("/api/admin/users", api_key=api_key)
+    users = result.get("users", []) if result and result.get("success") else []
+
+    text = f"━━━━━━━━━━━━━━━━━━━━\n  👑 لوحة إدارة ZIAD HOST\n━━━━━━━━━━━━━━━━━━━━\n👥 المستخدمين: *{len(users)}*\n━━━━━━━━━━━━━━━━━━━━\n"
+    for u in users[:10]:
+        text += f"• `{u['username']}` | {u.get('max_servers', 1)} سيرفر\n"
+
+    keyboard = [
+        [InlineKeyboardButton("📊 إحصائيات النظام", callback_data="admin_stats")],
+        [InlineKeyboardButton("🔙 رجوع", callback_data="main_menu")]
+    ]
+    await query.edit_message_text(text, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(keyboard))
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    uid = update.effective_user.id
     api_key = context.user_data.get("api_key")
     if api_key:
         result = api_request("/api/bot/verify", method="POST", data={"api_key": api_key})
         if result and result.get("success"):
             context.user_data["username"] = result.get("username")
-            await update.message.reply_text("👋 أهلاً بك مجدداً في لوحة ZIAD HOST", reply_markup=main_kb(uid))
+            await show_main_menu(update, context)
             return ConversationHandler.END
         context.user_data.clear()
 
@@ -3094,131 +3040,118 @@ async def handle_api_key(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data["username"] = result.get("username")
     context.user_data["is_admin"] = result.get("is_admin", False)
 
-    for uemail, udata in db["users"].items():
-        if udata.get("api_key") == api_key:
-            udata["telegram_id"] = update.effective_user.id
-            save_db(db)
-            break
-
-    uid = update.effective_user.id
     await update.message.reply_text(f"✅ *تم الربط بنجاح!*\n👤 مرحباً *{result.get('username')}*!", parse_mode="Markdown")
-    await update.message.reply_text("📋 القائمة الرئيسية:", reply_markup=main_kb(uid))
+    await show_main_menu(update, context)
     return ConversationHandler.END
 
 async def receive_server_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     name = update.message.text.strip()
     context.user_data["pending_server_name"] = name
-    srv_type = context.user_data.get("pending_server_type", "Python")
-    
+    keyboard = [
+        [InlineKeyboardButton("🐍 Python", callback_data="server_type_python"), InlineKeyboardButton("🟨 Node.js", callback_data="server_type_nodejs")]
+    ]
+    await update.message.reply_text(f"📦 *اختر نوع السيرفر:*\n\nالاسم: `{name}`", parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(keyboard))
+    return WAITING_FOR_SERVER_TYPE
+
+async def receive_server_type(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+
+    srv_type = "Python" if query.data == "server_type_python" else "Node.js"
+    name = context.user_data.get("pending_server_name", "Server")
+
     result = api_request("/api/bot/create_server", method="POST", data={
         "api_key": context.user_data["api_key"], "name": name, "server_type": srv_type
     })
 
     type_icon = "🐍" if srv_type == "Python" else "🟨"
     if result and result.get("success"):
-        await update.message.reply_text(f"✅ *تم إنشاء السيرفر بنجاح!*\n\n📛 الاسم: `{name}`\n{type_icon} النوع: `{srv_type}`\n\nارفع ملفاتك الآن عبر لوحة التحكم.", parse_mode="Markdown")
+        await query.edit_message_text(f"✅ *تم إنشاء السيرفر بنجاح!*\n\n📛 الاسم: `{name}`\n{type_icon} النوع: `{srv_type}`\n\nارفع ملفاتك عبر لوحة التحكم الآن.", parse_mode="Markdown")
     else:
-        await update.message.reply_text(f"❌ *فشل الإنشاء!*\n{result.get('message', 'خطأ')}", parse_mode="Markdown")
+        await query.edit_message_text(f"❌ *فشل الإنشاء!*\n{result.get('message', 'خطأ')}", parse_mode="Markdown")
 
-    uid = update.effective_user.id
-    await update.message.reply_text("📋 القائمة الرئيسية:", reply_markup=main_kb(uid))
+    await show_main_menu(update, context)
     return ConversationHandler.END
+
+async def show_console(update: Update, context: ContextTypes.DEFAULT_TYPE, folder: str):
+    query = update.callback_query
+    result = api_request("/api/bot/console", params={"folder": folder}, api_key=context.user_data.get("api_key"))
+    if result and result.get("success"):
+        logs = result.get("logs", "لا توجد مخرجات")
+        if len(logs) > 3500: logs = "...\n" + logs[-3500:]
+        keyboard = [[InlineKeyboardButton("🔄 تحديث", callback_data=f"console|{folder}"), InlineKeyboardButton("🔙 رجوع", callback_data="my_servers")]]
+        await query.edit_message_text(f"🖥 *كونسول السيرفر*\n```\n{logs}\n```", parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(keyboard))
+    else:
+        await query.edit_message_text("❌ فشل جلب الكونسول")
+
+async def show_errors(update: Update, context: ContextTypes.DEFAULT_TYPE, folder: str):
+    query = update.callback_query
+    result = api_request("/api/bot/errors", params={"folder": folder}, api_key=context.user_data.get("api_key"))
+    if result and result.get("success"):
+        errors = result.get("errors", "✅ لا توجد أخطاء")
+        if len(errors) > 3500: errors = "...\n" + errors[-3500:]
+        keyboard = [[InlineKeyboardButton("🔙 رجوع", callback_data="my_servers")]]
+        await query.edit_message_text(f"⚠️ *سجل الأخطاء*\n```\n{errors}\n```", parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(keyboard))
+    else:
+        await query.edit_message_text("❌ فشل جلب سجل الأخطاء")
+
+async def admin_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    metrics = api_request("/api/system/metrics")
+    cpu = metrics.get("cpu", "?") if metrics else "?"
+    ram = metrics.get("memory", "?") if metrics else "?"
+    disk = metrics.get("disk", "?") if metrics else "?"
+    await query.edit_message_text(
+        f"━━━━━━━━━━━━━━━━━━━━\n  📊 إحصائيات النظام\n━━━━━━━━━━━━━━━━━━━━\n🖥 CPU:  *{cpu}%*\n💾 RAM:  *{ram}%*\n💿 Disk: *{disk}%*",
+        parse_mode="Markdown", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 رجوع", callback_data="admin_panel")]])
+    )
 
 async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    await query.answer()
     data = query.data
-    uid = update.effective_user.id
 
-    if data == "nav_main":
-        await query.message.edit_text("📋 القائمة الرئيسية:", reply_markup=main_kb(uid))
-    elif data == "nav_admin":
-        if is_admin_tg_id(uid):
-            await admin_panel(update, context, edit=True)
-        else:
-            await query.answer("❌ عذراً، هذه اللوحة للمسؤولين فقط.", show_alert=True)
-    elif data == "enter_api":
-        await query.message.edit_text("🔑 أدخل API Key الخاص بك للحساب:")
+    if data == "main_menu":
+        await show_main_menu(update, context, edit=True)
+    elif data == "my_servers":
+        await show_servers_list(update, context)
+    elif data in ("enter_api", "change_api"):
+        context.user_data.pop("api_key", None)
+        await query.edit_message_text("🔑 *أدخل API Key الخاص بك:*\n\nيمكنك الحصول عليه من لوحة التحكم في الموقع.", parse_mode="Markdown")
         return WAITING_FOR_API_KEY
-    elif data == "nav_upload_py":
-        context.user_data["pending_server_type"] = "Python"
-        await query.message.edit_text("🐍 *رفع ملف بايثون جديد*\n\nأرسل اسم السيرفر المطلوب:", parse_mode="Markdown")
+    elif data == "logout":
+        context.user_data.clear()
+        await query.edit_message_text("🚪 تم تسجيل الخروج.\nاستخدم /start للدخول مجدداً.")
+    elif data == "create_server":
+        await query.edit_message_text("➕ *إنشاء سيرفر جديد*\n\n📝 أرسل اسم السيرفر:", parse_mode="Markdown")
         return WAITING_FOR_NEW_SERVER_NAME
-    elif data == "nav_upload_js":
-        context.user_data["pending_server_type"] = "Node.js"
-        await query.message.edit_text("🟨 *رفع ملف جافاسكريبت جديد*\n\nأرسل اسم السيرفر المطلوب:", parse_mode="Markdown")
-        return WAITING_FOR_NEW_SERVER_NAME
-    elif data == "nav_upload_zip":
-        await query.message.edit_text("📦 *رفع ملف مضغوط (ZIP)*\n\nأرسل ملف الـ ZIP ليتم فكه وإنشاء السيرفر تلقائياً.", parse_mode="Markdown")
-    elif data == "nav_files":
+    elif data == "admin_panel":
+        await show_admin_panel(update, context)
+    elif data == "admin_stats":
+        await admin_stats(update, context)
+
+    elif "|" in data:
+        cmd, value = data.split("|", 1)
         api_key = context.user_data.get("api_key")
-        if not api_key:
-            await query.message.edit_text("❌ يجب ربط API Key أولاً عبر /start")
-            return
-        result = api_request("/api/bot/servers", api_key=api_key)
-        servers = result.get("servers", []) if result and result.get("success") else []
-        if not servers:
-            await query.message.edit_text("📭 لا توجد سيرفرات حالياً.", reply_markup=InlineKeyboardMarkup([[btn("🔙 رجوع", callback_data="nav_main")]]))
-            return
-        text = "📁 *سيرفراتك النشطة والمتاحة:*\n"
-        for srv in servers:
-            text += f"• `{srv['title']}` | الحالة: `{srv['status']}`\n"
-        await query.message.edit_text(text, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup([[btn("🔙 رجوع", callback_data="nav_main")]]))
-    elif data == "nav_pro":
-        if is_user_pro(uid):
-            await query.message.edit_text("🔧 *لوحة Pro المتطورة*", parse_mode="Markdown", reply_markup=pro_panel_kb(uid))
-        else:
-            await query.answer("❌ تتطلب هذه الميزة حساب Pro مدفوع.", show_alert=True)
-    elif data.startswith("adm_"):
-        if is_admin_tg_id(uid):
-            await query.answer("✅ تم تنفيذ أمر الإدارة بنجاح", show_alert=True)
-            await admin_panel(update, context, edit=True)
-        else:
-            await query.answer("❌ غير مسموح لك.", show_alert=True)
+
+        if cmd in ("srv_start", "srv_stop", "srv_restart", "srv_delete"):
+            action = cmd.replace("srv_", "")
+            result = api_request("/api/bot/server/action", method="POST", data={"api_key": api_key, "folder": value, "action": action})
+            if result and result.get("success"):
+                await query.answer(result.get("message", "✅ تم")[:200], show_alert=True)
+            else:
+                await query.answer(f"❌ {result.get('message', 'فشل')}"[:200], show_alert=True)
+            await show_servers_list(update, context)
+        elif cmd == "console":
+            await show_console(update, context, value)
+        elif cmd == "errors":
+            await show_errors(update, context, value)
+        elif cmd == "install":
+            result = api_request("/api/bot/install", method="POST", data={"api_key": api_key, "folder": value})
+            msg = result.get("message", "✅ جاري التثبيت") if result and result.get("success") else f"❌ {result.get('message', 'فشل')}"
+            await query.edit_message_text(f"📦 *تثبيت المكتبات*\n\n{msg}\n\nتابع الكونسول للتفاصيل.", parse_mode="Markdown", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🖥 كونسول", callback_data=f"console|{value}"), InlineKeyboardButton("🔙 رجوع", callback_data="my_servers")]]))
 
     return ConversationHandler.END
-
-async def receive_server_type(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    data = query.data
-    
-    if data == "server_type_python":
-        srv_type = "Python"
-    elif data == "server_type_node":
-        srv_type = "Node.js"
-    else:
-        srv_type = "Python"
-        
-    context.user_data["pending_server_type"] = srv_type
-    await query.message.edit_text(f"✅ تم اختيار نوع السيرفر: *{srv_type}*\n\nالآن أرسل اسم السيرفر المطلوب:", parse_mode="Markdown")
-    return WAITING_FOR_NEW_SERVER_NAME
-
-async def handle_document_upload(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    api_key = context.user_data.get("api_key")
-    if not api_key:
-        await update.message.reply_text("❌ يجب ربط API Key أولاً عبر /start قبل رفع الملفات.")
-        return
-
-    doc = update.message.document
-    filename = doc.file_name
-    file_info = await context.bot.get_file(doc.file_id)
-    download_path = os.path.join(BASE_DIR, filename)
-    await file_info.download_to_drive(download_path)
-    
-    if filename.endswith(".zip"):
-        srv_name = filename[:-4]
-        srv_type = "Node.js" if ("node" in filename.lower() or "js" in filename.lower()) else "Python"
-        res = api_request("/api/bot/create_server", method="POST", data={"api_key": api_key, "name": srv_name, "server_type": srv_type})
-        if res and res.get("success"):
-            await update.message.reply_text(f"📦 تم فك وتثبيت الملف المضغوط وإنشاء السيرفر بنجاح باسم: `{srv_name}`", parse_mode="Markdown")
-        else:
-            await update.message.reply_text("❌ فشل إنشاء السيرفر من الملف المضغوط.")
-    else:
-        await update.message.reply_text(f"✅ تم استلام الملف بنجاح: `{filename}`", parse_mode="Markdown")
-    
-    if os.path.exists(download_path):
-        os.remove(download_path)
 
 def run_telegram_bot():
     try:
@@ -3248,7 +3181,6 @@ def run_telegram_bot():
         application.add_handler(conv)
         application.add_handler(CommandHandler("help", help_command))
         application.add_handler(CommandHandler("info", info_command))
-        application.add_handler(MessageHandler(filters.Document.ALL, handle_document_upload))
         application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
         application.add_error_handler(error_handler)
         
@@ -3261,6 +3193,5 @@ def run_telegram_bot():
 
 if __name__ == "__main__":
     threading.Thread(target=run_telegram_bot, daemon=True).start()
-    port = int(os.environ.get("PORT", 10000))
+    port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=False, threaded=True)
-
