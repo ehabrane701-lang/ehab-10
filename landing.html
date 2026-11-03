@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZIAD HOST | استضافة احترافية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* خلفية أنميشن احترافية */
+        .hero-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
+        }
+
+        .glow-orb {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.15), transparent 70%);
+            border-radius: 50%;
+            top: -200px;
+            right: -200px;
+            z-index: -1;
+            animation: floatGlow 20s ease-in-out infinite;
+        }
+
+        .glow-orb-2 {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(255, 100, 0, 0.1), transparent 70%);
+            border-radius: 50%;
+            bottom: -150px;
+            left: -150px;
+            z-index: -1;
+            animation: floatGlow 25s ease-in-out infinite reverse;
+        }
+
+        @keyframes floatGlow {
+            0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.5; }
+            50% { transform: translate(50px, 30px) scale(1.1); opacity: 0.8; }
+        }
+
+        .grid-pattern {
+            position: fixed;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(255, 215, 0, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 215, 0, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: -1;
+        }
+
+        /* نافبار */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 20px 40px;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            transition: all 0.3s;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(145deg, #1a1a2e, #0a0a0a);
+            border: 1.5px solid #FFD700;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: #FFD700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .logo-text {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 16px;
+        }
+
+        .nav-btn {
+            padding: 10px 28px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        .nav-btn.login {
+            background: transparent;
+            border: 1.5px solid rgba(255, 215, 0, 0.5);
+            color: #FFD700;
+        }
+
+        .nav-btn.login:hover {
+            border-color: #FFD700;
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .nav-btn.register {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .nav-btn.register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 100px 20px 60px;
+        }
+
+        .hero-content {
+            max-width: 900px;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: rgba(255, 215, 0, 0.15);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 50px;
+            padding: 8px 20px;
+            font-size: 0.8rem;
+            color: #FFD700;
+            margin-bottom: 30px;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            line-height: 1.3;
+        }
+
+        .hero-title .highlight {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: #9ca3cf;
+            margin-bottom: 40px;
+            line-height: 1.8;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            padding: 14px 40px;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Tajawal', sans-serif;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(255, 215, 0, 0.5);
+        }
+
+        .btn-secondary {
+            padding: 14px 40px;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 50px;
+            border: 1.5px solid rgba(255, 215, 0, 0.5);
+            background: transparent;
+            color: #FFD700;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        .btn-secondary:hover {
+            border-color: #FFD700;
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 80px 40px;
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 50px;
+        }
+
+        .section-title span {
+            color: #FFD700;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: rgba(20, 20, 40, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 28px;
+            padding: 35px 25px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            border-color: rgba(255, 215, 0, 0.5);
+            transform: translateY(-8px);
+        }
+
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(145deg, #FFD70020, #FFA50010);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 2rem;
+            color: #FFD700;
+        }
+
+        .feature-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+        }
+
+        .feature-card p {
+            color: #9ca3cf;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+
+        /* Pricing Section */
+        .pricing {
+            padding: 80px 40px;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .pricing-card {
+            background: rgba(15, 15, 30, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 32px;
+            padding: 35px;
+            text-align: center;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .pricing-card.popular {
+            border-color: #FFD700;
+            transform: scale(1.02);
+            box-shadow: 0 10px 40px rgba(255, 215, 0, 0.2);
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: -12px;
+            right: 50%;
+            transform: translateX(50%);
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            padding: 5px 20px;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        .plan-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .plan-price {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #FFD700;
+            margin-bottom: 20px;
+        }
+
+        .plan-price small {
+            font-size: 0.9rem;
+            color: #9ca3cf;
+        }
+
+        .plan-features {
+            list-style: none;
+            margin: 25px 0;
+        }
+
+        .plan-features li {
+            padding: 8px 0;
+            color: #b9c3e0;
+            font-size: 0.85rem;
+        }
+
+        .plan-features i {
+            color: #FFD700;
+            margin-left: 8px;
+        }
+
+        /* Stats Section */
+        .stats-section {
+            padding: 60px 40px;
+            background: linear-gradient(135deg, #0a0a0a, #0f0f1a);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #FFD700;
+        }
+
+        .stat-label {
+            color: #9ca3cf;
+            margin-top: 8px;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 40px;
+            text-align: center;
+            border-top: 1px solid rgba(255, 215, 0, 0.1);
+            color: #6b7aaa;
+            font-size: 0.8rem;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate {
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        @media (max-width: 768px) {
+            .navbar { padding: 15px 20px; }
+            .logo-text { font-size: 1.2rem; }
+            .hero-title { font-size: 2rem; }
+            .hero-subtitle { font-size: 1rem; }
+            .features, .pricing, .stats-section { padding: 50px 20px; }
+            .nav-buttons { gap: 8px; }
+            .nav-btn { padding: 6px 16px; font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="hero-bg"></div>
+<div class="glow-orb"></div>
+<div class="glow-orb-2"></div>
+<div class="grid-pattern"></div>
+
+<nav class="navbar">
+    <div class="logo">
+        <div class="logo-icon"><i class="fas fa-crown"></i></div>
+        <span class="logo-text">ZIAD HOST</span>
+    </div>
+    <div class="nav-buttons">
+        <button class="nav-btn login" onclick="window.location.href='/login'">تسجيل الدخول</button>
+        <button class="nav-btn register" onclick="window.location.href='/login'">إنشاء حساب</button>
+    </div>
+</nav>
+
+<section class="hero">
+    <div class="hero-content animate">
+        <div class="hero-badge">
+            <i class="fas fa-bolt"></i> أقوى منصة استضافة في الشرق الأوسط
+        </div>
+        <h1 class="hero-title">
+            استضف مشاريعك<br>بأعلى <span class="highlight">أداء وأمان</span>
+        </h1>
+        <p class="hero-subtitle">
+            منصة ZIAD HOST توفر لك بيئة استضافة متكاملة لبوتات تيليجرام ومواقع Node.js<br>
+            مع دعم فني 24/7 وأسعار تنافسية
+        </p>
+        <div class="hero-buttons">
+            <button class="btn-primary" onclick="window.location.href='/login'">
+                <i class="fas fa-rocket"></i> ابدأ الآن مجاناً
+            </button>
+            <button class="btn-secondary" onclick="scrollToFeatures()">
+                <i class="fas fa-info-circle"></i> تعرف على المميزات
+            </button>
+        </div>
+    </div>
+</section>
+
+<section class="features" id="features">
+    <h2 class="section-title">لماذا <span>ZIAD HOST</span>؟</h2>
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fab fa-python"></i></div>
+            <h3>Python & Node.js</h3>
+            <p>دعم كامل لجميع أنواع البوتات والتطبيقات مع أحدث الإصدارات</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+            <h3>رفع سهل وسريع</h3>
+            <p>ارفع ملفاتك عبر السحب والإفلات أو من خلال مدير الملفات المتطور</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+            <h3>حماية متطورة</h3>
+            <p>أنظمة أمان متعددة الطبقات لحماية مشاريعك وبياناتك</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-headset"></i></div>
+            <h3>دعم فني 24/7</h3>
+            <p>فريق دعم متخصص يجيب على استفساراتك في أي وقت</p>
+        </div>
+    </div>
+</section>
+
+<section class="pricing">
+    <h2 class="section-title">خطط <span>استضافة</span> تناسب الجميع</h2>
+    <div class="pricing-grid">
+        <div class="pricing-card">
+            <div class="plan-name">🎁 مجاني</div>
+            <div class="plan-price">0$ <small>/شهر</small></div>
+            <ul class="plan-features">
+                <li><i class="fas fa-check"></i> 500 GB مساحة تخزين</li>
+                <li><i class="fas fa-check"></i> 256 MB رام</li>
+                <li><i class="fas fa-check"></i> 0.5 CPU نواة</li>
+                <li><i class="fas fa-check"></i> 2 سيرفر كحد أقصى</li>
+                <li><i class="fas fa-check"></i> دعم Python و Node.js</li>
+                <li><i class="fas fa-check"></i> SSL مجاني</li>
+            </ul>
+        </div>
+        <div class="pricing-card popular">
+            <div class="popular-badge"><i class="fas fa-star"></i> الأكثر طلباً</div>
+            <div class="plan-name">💎 4 جيجا</div>
+            <div class="plan-price">5$ <small>/شهر</small></div>
+            <ul class="plan-features">
+                <li><i class="fas fa-check"></i> 4 GB مساحة تخزين</li>
+                <li><i class="fas fa-check"></i> 1024 MB رام</li>
+                <li><i class="fas fa-check"></i> 1 CPU نواة</li>
+                <li><i class="fas fa-check"></i> 5 سيرفر كحد أقصى</li>
+                <li><i class="fas fa-check"></i> دعم Python و Node.js</li>
+                <li><i class="fas fa-check"></i> SSL مجاني + دعم أولوية</li>
+            </ul>
+        </div>
+        <div class="pricing-card">
+            <div class="plan-name">💎 10 جيجا</div>
+            <div class="plan-price">10$ <small>/شهر</small></div>
+            <ul class="plan-features">
+                <li><i class="fas fa-check"></i> 10 GB مساحة تخزين</li>
+                <li><i class="fas fa-check"></i> 2048 MB رام</li>
+                <li><i class="fas fa-check"></i> 2 CPU نواة</li>
+                <li><i class="fas fa-check"></i> 10 سيرفر كحد أقصى</li>
+                <li><i class="fas fa-check"></i> دعم Python و Node.js</li>
+                <li><i class="fas fa-check"></i> SSL مجاني + دعم VIP</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section class="stats-section">
+    <div class="stats-grid">
+        <div>
+            <div class="stat-number">500+</div>
+            <div class="stat-label">مستخدم نشط</div>
+        </div>
+        <div>
+            <div class="stat-number">1000+</div>
+            <div class="stat-label">سيرفر مستضاف</div>
+        </div>
+        <div>
+            <div class="stat-number">99.9%</div>
+            <div class="stat-label">وقت تشغيل</div>
+        </div>
+        <div>
+            <div class="stat-number">24/7</div>
+            <div class="stat-label">دعم فني</div>
+        </div>
+    </div>
+</section>
+
+<footer class="footer">
+    <p><i class="fas fa-crown"></i> ZIAD HOST - منصة الاستضافة الأقوى في الشرق الأوسط</p>
+    <p style="margin-top: 12px;">© 2026 جميع الحقوق محفوظة | تصميم وتطوير ZIAD</p>
+</footer>
+
+<script>
+    function scrollToFeatures() {
+        document.getElementById('features').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // تحديث إحصائيات متحركة
+    const stats = document.querySelectorAll('.stat-number');
+    const animateNumbers = () => {
+        stats.forEach(stat => {
+            const target = parseInt(stat.innerText);
+            let current = 0;
+            const increment = target / 50;
+            const updateNumber = () => {
+                if (current < target) {
+                    current += increment;
+                    stat.innerText = Math.floor(current) + (stat.innerText.includes('+') ? '+' : '');
+                    requestAnimationFrame(updateNumber);
+                } else {
+                    stat.innerText = target + (stat.innerText.includes('+') ? '+' : '');
+                }
+            };
+            updateNumber();
+        });
+    };
+    
+    // تشغيل المؤثرات عند التحميل
+    window.addEventListener('load', () => {
+        setTimeout(animateNumbers, 500);
+    });
+</script>
+</body>
+</html>
