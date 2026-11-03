@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZIAD HOST | تسجيل الدخول</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: #000000;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .bg-gold {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at 30% 40%, rgba(255,215,0,0.1), transparent 70%);
+            z-index: -2;
+        }
+        .login-card {
+            background: rgba(5,5,5,0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,215,0,0.3);
+            border-radius: 32px;
+            padding: 40px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+        .logo { text-align: center; margin-bottom: 30px; }
+        .logo-icon {
+            width: 70px; height: 70px;
+            background: linear-gradient(145deg, #000, #0a0a0a);
+            border: 1.5px solid #FFD700;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 2rem;
+            color: #FFD700;
+        }
+        .logo-text { font-size: 1.5rem; font-weight: 800; background: linear-gradient(135deg, #FFD700, #FFA500); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 25px; background: rgba(0,0,0,0.5); border-radius: 60px; padding: 4px; }
+        .tab-btn { flex: 1; padding: 10px; border-radius: 50px; border: none; background: none; color: #9ca3cf; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .tab-btn.active { background: linear-gradient(135deg, #FFD700, #FFA500); color: #000; }
+        .form-group { margin-bottom: 20px; }
+        .form-group input {
+            width: 100%;
+            padding: 14px 18px;
+            background: #000;
+            border: 1px solid rgba(255,215,0,0.3);
+            border-radius: 16px;
+            color: white;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+        }
+        .form-group input:focus { border-color: #FFD700; }
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border: none;
+            border-radius: 16px;
+            color: #000;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(255,215,0,0.4); }
+        .alert {
+            background: rgba(255,61,90,0.15);
+            border: 1px solid rgba(255,61,90,0.4);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 20px;
+            color: #ff7a94;
+            font-size: 0.8rem;
+            display: none;
+        }
+        .footer-note { text-align: center; margin-top: 20px; font-size: 0.7rem; color: #6b7aaa; }
+        .footer-note a { color: #FFD700; text-decoration: none; }
+        @media (max-width: 500px) { .login-card { padding: 30px 20px; } }
+    </style>
+</head>
+<body>
+<div class="bg-gold"></div>
+<div class="login-card">
+    <div class="logo">
+        <div class="logo-icon"><i class="fas fa-crown"></i></div>
+        <div class="logo-text">ZIAD HOST</div>
+    </div>
+    
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('login')">تسجيل الدخول</button>
+        <button class="tab-btn" onclick="switchTab('register')">حساب جديد</button>
+    </div>
+    
+    <div id="alertBox" class="alert"></div>
+    
+    <div id="loginForm">
+        <div class="form-group"><input type="email" id="loginEmail" placeholder="البريد الإلكتروني"></div>
+        <div class="form-group"><input type="password" id="loginPassword" placeholder="كلمة المرور"></div>
+        <button class="submit-btn" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> دخول</button>
+    </div>
+    
+    <div id="registerForm" style="display:none;">
+        <div class="form-group"><input type="email" id="regEmail" placeholder="البريد الإلكتروني"></div>
+        <div class="form-group"><input type="password" id="regPassword" placeholder="كلمة المرور (4 أحرف على الأقل)"></div>
+        <button class="submit-btn" onclick="doRegister()"><i class="fas fa-user-plus"></i> إنشاء حساب</button>
+    </div>
+    
+    <div class="footer-note">
+        <i class="fas fa-shield-alt"></i> ZIAD HOST | استضافة آمنة
+    </div>
+</div>
+
+<script>
+    function showAlert(msg, isError=true) {
+        const alert = document.getElementById('alertBox');
+        alert.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${msg}`;
+        alert.style.display = 'block';
+        setTimeout(() => alert.style.display = 'none', 4000);
+    }
+    
+    function switchTab(tab) {
+        document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+        document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+        document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+            btn.classList.toggle('active', (tab === 'login' && i === 0) || (tab === 'register' && i === 1));
+        });
+    }
+    
+    async function doLogin() {
+        const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+        const password = document.getElementById('loginPassword').value.trim();
+        if(!email || !password) { showAlert('الرجاء إدخال جميع البيانات'); return; }
+        try {
+            const res = await fetch('/api/login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, password}) });
+            const data = await res.json();
+            if(data.success) { window.location.href = data.redirect; }
+            else { showAlert(data.message || 'بيانات غير صحيحة'); }
+        } catch(e) { showAlert('خطأ في الاتصال'); }
+    }
+    
+    async function doRegister() {
+        const email = document.getElementById('regEmail').value.trim().toLowerCase();
+        const password = document.getElementById('regPassword').value.trim();
+        if(!email || !password) { showAlert('الرجاء إدخال جميع البيانات'); return; }
+        if(password.length < 4) { showAlert('كلمة المرور يجب أن تكون 4 أحرف على الأقل'); return; }
+        try {
+            const res = await fetch('/api/register', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, password}) });
+            const data = await res.json();
+            if(data.success) {
+                showAlert('✅ تم إنشاء الحساب! يمكنك تسجيل الدخول', false);
+                switchTab('login');
+                document.getElementById('loginEmail').value = email;
+            } else {
+                showAlert(data.message || 'فشل إنشاء الحساب');
+            }
+        } catch(e) { showAlert('خطأ في الاتصال'); }
+    }
+    
+    fetch('/api/current_user').then(r=>r.json()).then(d=>{ if(d.success) window.location.href = d.is_admin ? '/admin' : '/dashboard'; }).catch(()=>{});
+</script>
+</body>
+</html>
