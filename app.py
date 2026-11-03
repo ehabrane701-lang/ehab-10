@@ -232,7 +232,7 @@ app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 BOT_TOKEN = "9198716816:AAHYWvbY4SwwBQ5hKnoA17SOuxlA851oNCY"
 ADMIN_TELEGRAM_IDS = [1002670694]
 ADMIN_ID = 1002670694
-API_BASE_URL = os.environ.get("API_BASE_URL", "https://ehab-10.onrender.com")
+API_BASE_URL = os.environ.get("API_BASE_URL", "https://ehabrane701-lang.github.io/ehab-10/")
 
 DEVELOPER_INFO = "🛠 طُوِّر بواسطة: *𝗘𝗛𝗔𝗕𝗔𝗜𝗛𝗔𝗪𝗕𝗔𝗡𝗜*\n📬 تواصل: @Y_20_20"
 
