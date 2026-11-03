@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 """
 ZIAD HOST - نظام استضافة متطور مع لوحة تحكم وإدارة وبوت تيليجرام مدمج
@@ -3260,5 +3261,6 @@ def run_telegram_bot():
 
 if __name__ == "__main__":
     threading.Thread(target=run_telegram_bot, daemon=True).start()
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port, debug=False, threaded=True)
+
