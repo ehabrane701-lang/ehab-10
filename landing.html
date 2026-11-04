@@ -286,7 +286,7 @@
         .feature-icon {
             width: 70px;
             height: 70px;
-            background: linear-gradient(145deg, #FFD70020, #FFA50010);
+            background: linear-gradient(145deg, rgba(255, 215, 0, 0.125), rgba(255, 165, 0, 0.063));
             border-radius: 20px;
             display: flex;
             align-items: center;
@@ -459,7 +459,8 @@
     </div>
     <div class="nav-buttons">
         <button class="nav-btn login" onclick="window.location.href='/login'">تسجيل الدخول</button>
-        <button class="nav-btn register" onclick="window.location.href='/login'">إنشاء حساب</button>
+        <!-- تم تعديل الرابط ليتوجه لصفحة التسجيل بدلاً من تسجيل الدخول -->
+        <button class="nav-btn register" onclick="window.location.href='/register'">إنشاء حساب</button>
     </div>
 </nav>
 
@@ -476,7 +477,7 @@
             مع دعم فني 24/7 وأسعار تنافسية
         </p>
         <div class="hero-buttons">
-            <button class="btn-primary" onclick="window.location.href='/login'">
+            <button class="btn-primary" onclick="window.location.href='/register'">
                 <i class="fas fa-rocket"></i> ابدأ الآن مجاناً
             </button>
             <button class="btn-secondary" onclick="scrollToFeatures()">
@@ -519,7 +520,8 @@
             <div class="plan-name">🎁 مجاني</div>
             <div class="plan-price">0$ <small>/شهر</small></div>
             <ul class="plan-features">
-                <li><i class="fas fa-check"></i> 500 GB مساحة تخزين</li>
+                <!-- تم تصحيح خطأ المساحة التخزينية غير المنطقية -->
+                <li><i class="fas fa-check"></i> 5 GB مساحة تخزين</li>
                 <li><i class="fas fa-check"></i> 256 MB رام</li>
                 <li><i class="fas fa-check"></i> 0.5 CPU نواة</li>
                 <li><i class="fas fa-check"></i> 2 سيرفر كحد أقصى</li>
@@ -558,19 +560,20 @@
 <section class="stats-section">
     <div class="stats-grid">
         <div>
-            <div class="stat-number">500+</div>
+            <!-- تم إضافة خاصية data-target لتصحيح أداء الجافاسكريبت -->
+            <div class="stat-number" data-target="500" data-suffix="+">0+</div>
             <div class="stat-label">مستخدم نشط</div>
         </div>
         <div>
-            <div class="stat-number">1000+</div>
+            <div class="stat-number" data-target="1000" data-suffix="+">0+</div>
             <div class="stat-label">سيرفر مستضاف</div>
         </div>
         <div>
-            <div class="stat-number">99.9%</div>
+            <div class="stat-number" data-target="99.9" data-suffix="%" data-decimal="true">0%</div>
             <div class="stat-label">وقت تشغيل</div>
         </div>
         <div>
-            <div class="stat-number">24/7</div>
+            <div class="stat-number" data-text="24/7">24/7</div>
             <div class="stat-label">دعم فني</div>
         </div>
     </div>
@@ -586,20 +589,29 @@
         document.getElementById('features').scrollIntoView({ behavior: 'smooth' });
     }
 
-    // تحديث إحصائيات متحركة
+    // تحديث إحصائيات متحركة بشكل آمن وسليم
     const stats = document.querySelectorAll('.stat-number');
     const animateNumbers = () => {
         stats.forEach(stat => {
-            const target = parseInt(stat.innerText);
+            const targetStr = stat.getAttribute('data-target');
+            if (!targetStr) return; // تخطي العناصر الثابتة مثل 24/7
+            
+            const target = parseFloat(targetStr);
+            const suffix = stat.getAttribute('data-suffix') || '';
+            const isDecimal = stat.getAttribute('data-decimal') === 'true';
+            
             let current = 0;
             const increment = target / 50;
+            
             const updateNumber = () => {
                 if (current < target) {
                     current += increment;
-                    stat.innerText = Math.floor(current) + (stat.innerText.includes('+') ? '+' : '');
+                    if (current > target) current = target;
+                    
+                    stat.innerText = (isDecimal ? current.toFixed(1) : Math.floor(current)) + suffix;
                     requestAnimationFrame(updateNumber);
                 } else {
-                    stat.innerText = target + (stat.innerText.includes('+') ? '+' : '');
+                    stat.innerText = (isDecimal ? target.toFixed(1) : target) + suffix;
                 }
             };
             updateNumber();
