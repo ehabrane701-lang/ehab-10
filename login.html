@@ -46,7 +46,15 @@
             font-size: 2rem;
             color: #FFD700;
         }
-        .logo-text { font-size: 1.5rem; font-weight: 800; background: linear-gradient(135deg, #FFD700, #FFA500); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .logo-text { 
+            font-size: 1.5rem; 
+            font-weight: 800; 
+            background: linear-gradient(135deg, #FFD700, #FFA500); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            background-clip: text; 
+            color: transparent; 
+        }
         .tabs { display: flex; gap: 8px; margin-bottom: 25px; background: rgba(0,0,0,0.5); border-radius: 60px; padding: 4px; }
         .tab-btn { flex: 1; padding: 10px; border-radius: 50px; border: none; background: none; color: #9ca3cf; font-weight: 600; cursor: pointer; transition: 0.2s; }
         .tab-btn.active { background: linear-gradient(135deg, #FFD700, #FFA500); color: #000; }
@@ -86,6 +94,11 @@
             font-size: 0.8rem;
             display: none;
         }
+        .alert.success {
+            background: rgba(46, 213, 115, 0.15);
+            border-color: rgba(46, 213, 115, 0.4);
+            color: #2ed573;
+        }
         .footer-note { text-align: center; margin-top: 20px; font-size: 0.7rem; color: #6b7aaa; }
         .footer-note a { color: #FFD700; text-decoration: none; }
         @media (max-width: 500px) { .login-card { padding: 30px 20px; } }
@@ -107,14 +120,14 @@
     <div id="alertBox" class="alert"></div>
     
     <div id="loginForm">
-        <div class="form-group"><input type="email" id="loginEmail" placeholder="البريد الإلكتروني"></div>
-        <div class="form-group"><input type="password" id="loginPassword" placeholder="كلمة المرور"></div>
+        <div class="form-group"><input type="email" id="loginEmail" placeholder="البريد الإلكتروني" autocomplete="email"></div>
+        <div class="form-group"><input type="password" id="loginPassword" placeholder="كلمة المرور" autocomplete="current-password"></div>
         <button class="submit-btn" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> دخول</button>
     </div>
     
     <div id="registerForm" style="display:none;">
-        <div class="form-group"><input type="email" id="regEmail" placeholder="البريد الإلكتروني"></div>
-        <div class="form-group"><input type="password" id="regPassword" placeholder="كلمة المرور (4 أحرف على الأقل)"></div>
+        <div class="form-group"><input type="email" id="regEmail" placeholder="البريد الإلكتروني" autocomplete="email"></div>
+        <div class="form-group"><input type="password" id="regPassword" placeholder="كلمة المرور (4 أحرف على الأقل)" autocomplete="new-password"></div>
         <button class="submit-btn" onclick="doRegister()"><i class="fas fa-user-plus"></i> إنشاء حساب</button>
     </div>
     
@@ -124,52 +137,86 @@
 </div>
 
 <script>
-    function showAlert(msg, isError=true) {
-        const alert = document.getElementById('alertBox');
-        alert.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${msg}`;
-        alert.style.display = 'block';
-        setTimeout(() => alert.style.display = 'none', 4000);
+    function showAlert(msg, isError = true) {
+        const alertBox = document.getElementById('alertBox');
+        alertBox.className = 'alert ' + (isError ? '' : 'success');
+        alertBox.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${msg}`;
+        alertBox.style.display = 'block';
+        setTimeout(() => alertBox.style.display = 'none', 4000);
     }
     
     function switchTab(tab) {
+        // إخفاء التنبيهات عند التبديل بين النوافذ لتجنب التشويش
+        document.getElementById('alertBox').style.display = 'none';
+        
         document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
         document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
         document.querySelectorAll('.tab-btn').forEach((btn, i) => {
             btn.classList.toggle('active', (tab === 'login' && i === 0) || (tab === 'register' && i === 1));
         });
     }
+
+    function isValidEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
     
     async function doLogin() {
         const email = document.getElementById('loginEmail').value.trim().toLowerCase();
         const password = document.getElementById('loginPassword').value.trim();
-        if(!email || !password) { showAlert('الرجاء إدخال جميع البيانات'); return; }
+        
+        if (!email || !password) { showAlert('الرجاء إدخال جميع البيانات'); return; }
+        if (!isValidEmail(email)) { showAlert('صيغة البريد الإلكتروني غير صحيحة'); return; }
+
         try {
-            const res = await fetch('/api/login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, password}) });
+            const res = await fetch('/api/login', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ email, password }) 
+            });
             const data = await res.json();
-            if(data.success) { window.location.href = data.redirect; }
-            else { showAlert(data.message || 'بيانات غير صحيحة'); }
-        } catch(e) { showAlert('خطأ في الاتصال'); }
+            if (data.success) { 
+                window.location.href = data.redirect || '/dashboard'; 
+            } else { 
+                showAlert(data.message || 'بيانات غير صحيحة'); 
+            }
+        } catch (e) { 
+            showAlert('خطأ في الاتصال بالخادم'); 
+        }
     }
     
     async function doRegister() {
         const email = document.getElementById('regEmail').value.trim().toLowerCase();
         const password = document.getElementById('regPassword').value.trim();
-        if(!email || !password) { showAlert('الرجاء إدخال جميع البيانات'); return; }
-        if(password.length < 4) { showAlert('كلمة المرور يجب أن تكون 4 أحرف على الأقل'); return; }
+        
+        if (!email || !password) { showAlert('الرجاء إدخال جميع البيانات'); return; }
+        if (!isValidEmail(email)) { showAlert('صيغة البريد الإلكتروني غير صحيحة'); return; }
+        if (password.length < 4) { showAlert('كلمة المرور يجب أن تكون 4 أحرف على الأقل'); return; }
+
         try {
-            const res = await fetch('/api/register', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, password}) });
+            const res = await fetch('/api/register', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ email, password }) 
+            });
             const data = await res.json();
-            if(data.success) {
-                showAlert('✅ تم إنشاء الحساب! يمكنك تسجيل الدخول', false);
+            if (data.success) {
+                showAlert('تم إنشاء الحساب! يمكنك تسجيل الدخول الان', false);
                 switchTab('login');
                 document.getElementById('loginEmail').value = email;
+                document.getElementById('regPassword').value = '';
             } else {
                 showAlert(data.message || 'فشل إنشاء الحساب');
             }
-        } catch(e) { showAlert('خطأ في الاتصال'); }
+        } catch (e) { 
+            showAlert('خطأ في الاتصال بالخادم'); 
+        }
     }
     
-    fetch('/api/current_user').then(r=>r.json()).then(d=>{ if(d.success) window.location.href = d.is_admin ? '/admin' : '/dashboard'; }).catch(()=>{});
+    // التحقق من الجلسة الحالية عند فتح الصفحة
+    fetch('/api/current_user')
+        .then(r => r.json())
+        .then(d => { if (d.success) window.location.href = d.is_admin ? '/admin' : '/dashboard'; })
+        .catch(() => {});
 </script>
 </body>
 </html>
