@@ -924,18 +924,18 @@
                 card.innerHTML = `
                     <div class="server-card-header">
                         <div class="server-icon ${typeClass}">${typeIcon}</div>
-                        <div class="server-status ${s.status==='Running'?'status-online':'status-offline'}">
-                            <span class="status-dot ${s.status==='Running'?'dot-online':'dot-offline'}"></span>${s.status==='Running'?'يعمل':'متوقف'}
+                        <div class="server-status ${s.status === 'Running' ? 'status-online' : 'status-offline'}">
+                            <span class="status-dot ${s.status === 'Running' ? 'dot-online' : 'dot-offline'}"></span>${s.status === 'Running' ? 'يعمل' : 'متوقف'}
                         </div>
                     </div>
                     <div class="server-name">${escapeHtml(s.title)}</div>
                     <div class="server-meta">
-                        <span><i class="fas fa-plug"></i> المنفذ: ${s.port||'N/A'}</span>
-                        <span><i class="fas fa-tag"></i> ${s.plan==='free'?'مجاني':s.plan}</span>
+                        <span><i class="fas fa-plug"></i> المنفذ: ${s.port || 'N/A'}</span>
+                        <span><i class="fas fa-tag"></i> ${s.plan === 'free' ? 'مجاني' : s.plan}</span>
                     </div>
                     <div class="server-stats">
-                        <span><i class="fas fa-hdd"></i> ${Math.round((s.storage_limit||512000)/1024)} MB</span>
-                        <span><i class="fas fa-microchip"></i> ${s.cpu_limit||0.5}</span>
+                        <span><i class="fas fa-hdd"></i> ${Math.round((s.storage_limit || 512000)/1024)} MB</span>
+                        <span><i class="fas fa-microchip"></i> ${s.cpu_limit || 0.5}</span>
                         <span><i class="fas fa-clock"></i> ${s.uptime || '0'}</span>
                     </div>
                     <div class="server-actions">
@@ -997,7 +997,6 @@
         loadStartupFiles();
         loadApiKey();
         
-        // تفعيل التبويب الأول
         document.querySelectorAll('.tab-nav-btn').forEach((btn, idx) => {
             btn.classList.toggle('active', idx === 0);
         });
@@ -1059,7 +1058,6 @@
         loadServers();
     }
 
-    // التبويبات
     document.querySelectorAll('.tab-nav-btn').forEach(btn => {
         btn.onclick = () => {
             const tab = btn.dataset.tab;
